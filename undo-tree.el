@@ -604,6 +604,10 @@ in visualizer."
   "Parent buffer in visualizer.")
 (make-variable-buffer-local 'undo-tree-visualizer-buffer)
 
+(defvar undo-tree-visualizer-window nil
+  "Parent window in visualizer.")
+(make-variable-buffer-local 'undo-tree-visualizer-window)
+
 (defvar undo-tree-visualizer-timestamps nil
   "Non-nil when visualizer is displaying time-stamps.")
 (make-variable-buffer-local 'undo-tree-visualizer-timestamps)
@@ -1397,7 +1401,8 @@ Argument is a character, naming the register."
   (let ((undo-tree buffer-undo-tree)
         (buff (current-buffer))
 	(display-buffer-mark-dedicated 'soft))
-    (switch-to-buffer-other-window " *undo-tree*")
+    (setq undo-tree-visualizer-window (selected-window))
+    (set-window-buffer (select-window (split-window-horizontally -20)) (get-buffer-create " *undo-tree*"))
     (undo-tree-visualizer-mode)
     (setq undo-tree-visualizer-buffer buff)
     (setq buffer-undo-tree undo-tree)
@@ -1780,7 +1785,10 @@ using `undo-tree-redo' or `undo-tree-visualizer-redo'."
   ;; remove kill visualizer hook from parent buffer
   (with-current-buffer undo-tree-visualizer-buffer
     (remove-hook 'before-change-functions 'undo-tree-kill-visualizer t))
-  (kill-buffer nil))
+  (kill-buffer nil)
+  (delete-window)
+  (select-window undo-tree-visualizer-window)
+  )
 
 
 (defun undo-tree-visualizer-set (pos)
